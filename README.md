@@ -1,6 +1,6 @@
-# DefenSync — Multi-Server Behavioral Log Intelligence Platform
+# SecureSync — Continuous Security Monitoring and Threat Detection
 
-Enterprise-style behavioral threat detection: register multiple Linux servers via the web UI, collect logs over SSH, run Isolation Forest + Random Forest detection, and visualize per-server activity on a real-time dashboard.
+SecureSync is an intelligent security monitoring platform that continuously collects and analyzes Linux system logs to detect suspicious activities, assess security risks, and provide real-time threat detection through behavioral analytics and machine learning.
 
 ## Architecture
 
@@ -18,7 +18,9 @@ User Login → Dashboard → Servers → Add Server (Test → Save)
                     Dashboard (per-server metrics)
 ```
 
-**SSH credentials are never read from `.env` in production.** Every Linux server is added through the DefenSync web interface.
+**SSH credentials are never read from `.env` in production.** Every Linux server is securely registered through the SecureSync web interface.
+
+---
 
 ## Prerequisites
 
@@ -27,12 +29,14 @@ User Login → Dashboard → Servers → Add Server (Test → Save)
 - PostgreSQL
 - One or more Linux VMs with SSH access (CentOS/RHEL/Ubuntu)
 
-## Quick Start
+---
 
-### 1. Backend
+# Quick Start
+
+## 1. Backend
 
 ```powershell
-cd DefenSync
+cd SecureSync
 copy .env.example .env
 # Set DB_* credentials and SECRET_KEY
 
@@ -43,9 +47,15 @@ python -m backend.database.init_db
 python -m backend.main
 ```
 
-API docs: http://localhost:8000/docs
+API Documentation:
 
-### 2. Frontend
+```
+http://localhost:8000/docs
+```
+
+---
+
+## 2. Frontend
 
 ```powershell
 cd frontend
@@ -53,25 +63,42 @@ npm install
 npm run dev
 ```
 
-UI: http://localhost:5173
+Frontend:
 
-### 3. Register Linux servers
-
-1. Open http://localhost:5173 → **Register** / **Login**
-2. Promote your user to admin:
-
-```sql
-UPDATE users SET role = 'admin' WHERE username = 'your_username';
+```
+http://localhost:5173
 ```
 
-3. Go to **Servers** → **Add Server**
-4. Enter Server Name, Host/IP, Port, Username, Password or SSH Key
-5. Click **Test Connection** — must succeed before **Save Server**
-6. Click **Collect** or enable the background scheduler
+---
 
-### 4. Enable automatic collection
+## 3. Register Linux Servers
 
-In `.env`:
+1. Open **http://localhost:5173**
+2. Register or Login.
+3. Promote your account to Administrator.
+
+```sql
+UPDATE users
+SET role = 'admin'
+WHERE username = 'your_username';
+```
+
+4. Navigate to **Servers → Add Server**
+5. Enter:
+   - Server Name
+   - Host/IP
+   - Port
+   - Username
+   - Password or SSH Key
+6. Click **Test Connection**
+7. Save the server.
+8. Start log collection manually or enable the scheduler.
+
+---
+
+## 4. Enable Automatic Collection
+
+Configure `.env`
 
 ```env
 SCHEDULER_ENABLED=true
@@ -79,52 +106,132 @@ COLLECTION_INTERVAL_MINUTES=15
 COLLECTION_TAIL_LINES=500
 ```
 
-The scheduler connects to every **active** server, collects logs, runs preprocessing, and executes ML detection.
+The scheduler periodically connects to every active Linux server, collects logs, processes them through the behavioral analysis pipeline, and performs machine learning–based threat detection.
 
-### 5. Run ML detection manually
+---
 
-**Detection** → **Run Detection** (requires ≥10 events in the database)
+## 5. Run ML Detection
 
-Use `python scripts\seed_demo_data.py 120` for demo data without live SSH.
+Navigate to:
 
-## API Endpoints
+```
+Detection → Run Detection
+```
+
+Requires at least **10 events** in the database.
+
+For demonstration:
+
+```powershell
+python scripts\seed_demo_data.py 120
+```
+
+---
+
+# API Endpoints
 
 | Endpoint | Auth | Description |
 |----------|------|-------------|
 | `GET /health` | No | Health check |
 | `POST /api/v1/auth/register` | No | Register user |
-| `POST /api/v1/auth/token` | No | Login |
-| `GET /api/v1/servers` | JWT | List servers |
-| `POST /api/v1/servers/test-connection` | Admin | Test SSH before save |
-| `POST /api/v1/servers` | Admin | Register server |
+| `POST /api/v1/auth/token` | No | User login |
+| `GET /api/v1/servers` | JWT | List registered servers |
+| `POST /api/v1/servers/test-connection` | Admin | Test SSH connection |
+| `POST /api/v1/servers` | Admin | Register Linux server |
 | `POST /api/v1/servers/{id}/test` | JWT | Test saved server |
 | `POST /api/v1/servers/{id}/collect` | JWT | Collect logs |
-| `POST /api/v1/collection/run` | Admin | Pipeline collection (requires `server_id`) |
-| `GET /api/v1/events` | JWT | Query events (`server_id` filter) |
-| `GET /api/v1/dashboard/summary` | JWT | Dashboard metrics |
-| `POST /api/v1/detection/run` | JWT | Run ML detection |
+| `POST /api/v1/collection/run` | Admin | Execute collection pipeline |
+| `GET /api/v1/events` | JWT | Retrieve security events |
+| `GET /api/v1/dashboard/summary` | JWT | Dashboard statistics |
+| `POST /api/v1/detection/run` | JWT | Execute ML threat detection |
 
-## Project Structure
+---
+
+# Project Structure
 
 ```
-DefenSync/
-├── backend/          # FastAPI, SSH collector, ML pipeline
-├── frontend/         # React dashboard (Vite)
-├── scripts/          # migrate_schema.py, seed_demo_data.py
-└── .env              # DB, JWT, scheduler settings only
+SecureSync/
+├── backend/          # FastAPI backend, SSH collector, risk engine, ML pipeline
+├── frontend/         # React + Vite dashboard
+├── scripts/          # Database migration & demo data scripts
+└── .env              # Database, JWT and scheduler configuration
 ```
 
-## ML Detection
+---
 
-Hybrid engine in `backend/services/detection_service.py`:
+# Security Analytics Pipeline
 
-- **Rule Engine** — alerts for risk score ≥ 70
-- **Isolation Forest** — unsupervised anomaly detection
-- **Random Forest** — supervised suspicious/normal classification
+```
+Linux Server
+      │
+      ▼
+SSH Collector
+      │
+      ▼
+Log Parser
+      │
+      ▼
+Event Normalizer
+      │
+      ▼
+Risk Engine
+      │
+      ▼
+PostgreSQL
+      │
+      ▼
+Machine Learning Engine
+      │
+      ▼
+Dashboard & Alerts
+```
 
-Features include `server_id`, login time, session duration, failed login count, CPU/memory/disk usage, commands executed, and network connections.
+---
 
-## License
+# Machine Learning Detection
 
-MCA Final Year Project — DefenSync Behavioral Log Intelligence System
-"# SecureSync-Continuous-security-monitoring-and-threat-detection" 
+SecureSync uses a hybrid detection engine located in:
+
+```
+backend/services/detection_service.py
+```
+
+Detection components include:
+
+- **Rule-Based Risk Engine** — Detects high-risk events using predefined security rules.
+- **Isolation Forest** — Identifies anomalous user and system behavior.
+- **Random Forest** — Classifies events as suspicious or normal.
+
+Behavioral features include:
+
+- Server ID
+- Login time
+- Session duration
+- Failed login attempts
+- CPU, Memory and Disk utilization
+- Commands executed
+- Network connections
+- User activity patterns
+
+---
+
+# Key Features
+
+- Continuous Linux security log monitoring
+- Multi-server SSH log collection
+- Automated log parsing and normalization
+- Risk score calculation
+- Behavioral anomaly detection
+- Hybrid Machine Learning (Isolation Forest + Random Forest)
+- Real-time dashboard and security analytics
+- Secure authentication using JWT
+- PostgreSQL-based event storage
+- Scalable modular architecture
+
+---
+
+# License
+
+**MCA Final Year Project**
+
+**SecureSync: Continuous Security Monitoring and Threat Detection**
