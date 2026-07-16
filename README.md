@@ -1,6 +1,6 @@
-# SecureSync — Continuous Security Monitoring and Threat Detection
+# LogSentinel — Continuous Security Monitoring and Threat Detection
 
-SecureSync is an intelligent security monitoring platform that continuously collects and analyzes Linux system logs to detect suspicious activities, assess security risks, and provide real-time threat detection through behavioral analytics and machine learning.
+LogSentinel is an intelligent security monitoring platform that continuously collects and analyzes Linux system logs to detect suspicious activities, assess security risks, and provide real-time threat detection through behavioral analytics and machine learning.
 
 ## Architecture
 
@@ -18,7 +18,7 @@ User Login → Dashboard → Servers → Add Server (Test → Save)
                     Dashboard (per-server metrics)
 ```
 
-**SSH credentials are never read from `.env` in production.** Every Linux server is securely registered through the SecureSync web interface.
+**SSH credentials are never read from `.env` in production.** Every Linux server is securely registered through the LogSentinel web interface.
 
 ---
 
@@ -36,7 +36,7 @@ User Login → Dashboard → Servers → Add Server (Test → Save)
 ## 1. Backend
 
 ```powershell
-cd SecureSync
+cd LogSentinel
 copy .env.example .env
 # Set DB_* credentials and SECRET_KEY
 
@@ -150,7 +150,7 @@ python scripts\seed_demo_data.py 120
 # Project Structure
 
 ```
-SecureSync/
+LogSentinel/
 ├── backend/          # FastAPI backend, SSH collector, risk engine, ML pipeline
 ├── frontend/         # React + Vite dashboard
 ├── scripts/          # Database migration & demo data scripts
@@ -190,7 +190,7 @@ Dashboard & Alerts
 
 # Machine Learning Detection
 
-SecureSync uses a hybrid detection engine located in:
+LogSentinel uses a hybrid detection engine located in:
 
 ```
 backend/services/detection_service.py
@@ -234,4 +234,4 @@ Behavioral features include:
 
 **MCA Final Year Project**
 
-**SecureSync: Continuous Security Monitoring and Threat Detection**
+**LogSentinel: Continuous Security Monitoring and Threat Detection**
